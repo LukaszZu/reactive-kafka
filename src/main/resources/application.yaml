@@ -1,0 +1,33 @@
+spring:
+  cloud:
+    stream:
+      default:
+        group: aaa121111a
+      kafka:
+        default:
+          consumer:
+            ack-mode: MANUAL
+            configuration:
+              max:
+                poll:
+                  records: 10
+      bindings:
+        myConsumer-in-0:
+          destination: dupa1
+          consumer:
+            batch-mode: false
+    function:
+      definition: myConsumer
+
+#logging.level.root: debug
+#logging.level.org.apache.kafka: info
+logging.level.org.springframework.kafka.listener: debug
+
+
+
+
+
+
+
+
+
