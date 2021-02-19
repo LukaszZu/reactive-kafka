@@ -2,27 +2,33 @@ spring:
   cloud:
     stream:
       default:
-        group: aaa121111a
+        group: aaa121111a2
       kafka:
         default:
           consumer:
             ack-mode: MANUAL
+            autoCommitOnError: false
             configuration:
               max:
                 poll:
-                  records: 10
+                  records: 1
       bindings:
         myConsumer-in-0:
           destination: dupa1
           consumer:
             batch-mode: false
+            maxAttempts: 2147483647
+            backOffInitialInterval: 1000
+            backOffMaxInterval: 30000
+            backOffMultiplier: 2.0
+
     function:
       definition: myConsumer
 
 #logging.level.root: debug
 #logging.level.org.apache.kafka: info
-logging.level.org.springframework.kafka.listener: debug
-
+logging.level.org.springframework.kafka.listener: trace
+logging.level.org.springframework.retry.backoff: debug
 
 
 

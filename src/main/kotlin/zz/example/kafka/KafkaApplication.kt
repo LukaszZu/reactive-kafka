@@ -2,15 +2,19 @@ package zz.example.kafka
 
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.kafka.listener.*
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.Message
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Hooks
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.lang.RuntimeException
 import java.time.Duration
 import java.util.function.Consumer
 import java.util.function.Function
@@ -29,6 +33,8 @@ data class SomeData(val id: String, val data: String)
 
 @Configuration
 class KafkaConsumerApp {
+
+
 
 //    @Bean
 //    fun myConsumer() = Function<List<SomeData>, Mono<Void>> {
@@ -79,8 +85,9 @@ class KafkaConsumerApp {
     val al: AtomicLong = AtomicLong()
 
     @Bean
-    fun myConsumer() = Function<Flux<Message<SomeData>>, Mono<Void>> { stream ->
+    fun myConsumer3() = Function<Flux<Message<SomeData>>, Mono<Void>> { stream ->
         stream
+            .limitRequest(1)
             .index()
             .doOnRequest { println("Requested $it") }
 //            .doOnNext { println("Start processing ${Thread.currentThread().name}") }
@@ -90,10 +97,21 @@ class KafkaConsumerApp {
                     .flatMap {
                         Mono.just(it).delayElement(Duration.ofSeconds(5))
                     }
-            }, 50, 5) //default c=256 p=32
+            }, 1) //default c=256 p=32
             .doOnNext {
                 println("Processed ${it.t1} -> ${Thread.currentThread().name}")
                 (it.t2.headers[KafkaHeaders.ACKNOWLEDGMENT] as Acknowledgment).acknowledge()
+            }
+            .then()
+    }
+
+
+    @Bean
+    fun myConsumer() = Function<Flux<Message<SomeData>>, Mono<Void>> { stream ->
+        stream
+            .map { throw RuntimeException("Ups boom") }
+            .doOnCancel {
+                println("Canceled--------------------------------------")
             }
             .then()
     }
