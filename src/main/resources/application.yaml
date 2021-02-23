@@ -2,7 +2,7 @@ spring:
   cloud:
     stream:
       default:
-        group: aaa121111a2
+        group: mygroup1
       kafka:
         default:
           consumer:
@@ -29,6 +29,13 @@ spring:
 #logging.level.org.apache.kafka: info
 logging.level.org.springframework.kafka.listener: trace
 logging.level.org.springframework.retry.backoff: debug
+
+
+endpoints.shutdown.enabled: true
+management.endpoint.shutdown.enabled: true
+management.endpoint.web.exposure.include: all
+management.endpoint.health.show-details: always
+management.endpoint.health.show-components: always
 
 
 
